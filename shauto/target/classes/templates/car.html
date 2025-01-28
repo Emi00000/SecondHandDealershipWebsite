@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Details</title>
+    <link rel="stylesheet" href="../static/styles.css">
+</head>
+<body>
+<header>
+    <h1>Car Details</h1>
+    <nav>
+        <a href="../static/index.html">Home</a>
+        <a href="../static/login.html">Login</a>
+        <a href="../static/register.html">Register</a>
+    </nav>
+</header>
+
+<main>
+    <div id="car-details">
+        <!-- Car details will be dynamically loaded here -->
+    </div>
+</main>
+
+<script>
+    // Get car ID from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const carId = urlParams.get('id');
+
+    // Function to load car details
+    async function loadCarDetails() {
+        if (!carId) {
+            document.getElementById('car-details').innerHTML = "<p>Car ID not provided!</p>";
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/cars/${carId}`);
+            if (!response.ok) {
+                throw new Error("Car not found.");
+            }
+
+            const car = await response.json();
+            const carDetails = document.getElementById('car-details');
+
+            carDetails.innerHTML = `
+                    <h2>${car.make} ${car.model} (${car.year})</h2>
+                    <p><strong>Price:</strong> $${car.price}</p>
+                    <p><strong>Color:</strong> ${car.color}</p>
+                    <p><strong>Status:</strong> ${car.sold ? "Sold" : "Available"}</p>
+                    ${car.sold ? `<p><strong>Buyer:</strong> ${car.buyer}</p>` : ''}
+                    ${
+                !car.sold
+                    ? `<button onclick="buyCar(${car.id})">Buy this Car</button>`
+                    : '<p>This car has already been sold.</p>'
+            }
+                `;
+        } catch (error) {
+            document.getElementById('car-details').innerHTML = `<p>Error: ${error.message}</p>`;
+        }
+    }
+
+    // Function to purchase the car
+    async function buyCar(carId) {
+        const username = prompt("Enter your username to buy the car:");
+        if (!username) {
+            alert("You must be logged in to purchase a car.");
+            return;
+        }
+
+        const response = await fetch(`/api/cars/buy/${carId}?username=${username}`, {
+            method: 'POST',
+        });
+
+        if (response.ok) {
+            alert("Thank you for your purchase!");
+            window.location.reload();
+        } else {
+            alert("Failed to purchase car.");
+        }
+    }
+
+    // Load the car details when the page loads
+    loadCarDetails();
+</script>
+</body>
+</html>

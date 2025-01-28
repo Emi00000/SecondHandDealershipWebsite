@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account</title>
+  <link rel="stylesheet" href="/css/account.css">
+</head>
+<body>
+<header class="header">
+  <div class="container">
+    <h1 class="logo">My Account</h1>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="#" onclick="logout()">Logout</a>
+    </nav>
+  </div>
+</header>
+
+<main class="main">
+  <section class="account-details">
+    <h2>User Details</h2>
+    <div id="user-details"></div>
+  </section>
+  <section class="purchase-history">
+    <h2>Purchase History</h2>
+    <ul id="purchase-list"></ul>
+  </section>
+</main>
+
+<script>
+  async function fetchUserDetails() {
+    const username = localStorage.getItem('username');
+    const response = await fetch(`/api/user/details?username=${username}`);
+    const user = await response.json();
+
+    document.getElementById('user-details').innerHTML = `
+            <p><strong>Username:</strong> ${user.username}</p>
+            <p><strong>Role:</strong> ${user.role}</p>
+        `;
+
+    const purchases = user.purchases || [];
+    const purchaseList = document.getElementById('purchase-list');
+    purchases.forEach(purchase => {
+      const li = document.createElement('li');
+      li.textContent = `Car: ${purchase.car} - Price: $${purchase.price}`;
+      purchaseList.appendChild(li);
+    });
+  }
+
+  function logout() {
+    localStorage.removeItem('username');
+    alert('You have been logged out.');
+    window.location.href = "index.html";
+    localStorage.removeItem(username);
+  }
+
+  fetchUserDetails();
+</script>
+</body>
+</html>

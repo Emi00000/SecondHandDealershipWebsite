@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="/css/register.css">
+</head>
+<body>
+<header class="header">
+    <div class="container">
+        <h1 class="logo">Register</h1>
+        <nav class="nav">
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </div>
+</header>
+
+<main class="main">
+    <section class="form-section">
+        <form id="register-form" class="form">
+            <h2>Create an Account</h2>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" placeholder="Enter your username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+
+            <label for="role">Role:</label>
+            <select id="role" name="role" required>
+                <option value="USER">User</option>
+                <option value="ADMIN">Admin</option>
+            </select>
+
+            <button type="submit">Register</button>
+        </form>
+        <p id="register-message"></p>
+    </section>
+</main>
+
+<script>
+    document.getElementById('register-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const role = document.getElementById('role').value;
+
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password, role }),
+            });
+
+            if (response.ok) {
+                const message = document.getElementById('register-message');
+                message.textContent = "Registration successful!";
+                message.style.color = "green";
+
+                // Redirect to login page after successful registration
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 1000);
+            } else {
+                const error = await response.text();
+                const message = document.getElementById('register-message');
+                message.textContent = "Registration failed: " + error;
+                message.style.color = "red";
+            }
+        } catch (error) {
+            const message = document.getElementById('register-message');
+            message.textContent = "An error occurred during registration.";
+            message.style.color = "red";
+        }
+    });
+</script>
+</body>
+</html>

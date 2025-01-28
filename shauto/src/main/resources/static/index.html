@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Second Hand Auto</title>
+    <link rel="stylesheet" href="/css/index.css">
+</head>
+<body>
+<header class="header">
+    <div class="container">
+        <h1 class="logo">Second Hand Auto</h1>
+        <nav class="nav">
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+            <a href="register.html">Register</a>
+        </nav>
+    </div>
+</header>
+
+<main class="main">
+    <section class="car-section">
+        <h2>Available Cars</h2>
+        <div id="car-list" class="car-list">
+            <!-- Cars will be dynamically inserted here -->
+        </div>
+    </section>
+</main>
+
+
+<script>
+    async function loadCars() {
+        try {
+            const response = await fetch('/api/cars');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const cars = await response.json();
+            const carList = document.getElementById('car-list');
+            carList.innerHTML = '';
+
+            cars.forEach(car => {
+                const carDiv = document.createElement('div');
+                carDiv.classList.add('car');
+                carDiv.innerHTML = `
+                <h3>${car.make} ${car.model} (${car.year})</h3>
+                <p>Price: $${car.price}</p>
+                <p>Color: ${car.color}</p>
+                <button onclick="buyCar(${car.id})">Buy</button>
+            `;
+                carList.appendChild(carDiv);
+            });
+        } catch (error) {
+            console.error("Failed to load cars:", error);
+            const carList = document.getElementById('car-list');
+            carList.innerHTML = `<p>Error loading cars: ${error.message}</p>`;
+        }
+    }
+    function updateNavigation() {
+        const isAuthenticated = localStorage.getItem('username');
+        const nav = document.querySelector('.nav');
+        nav.innerHTML = isAuthenticated ? `
+            <a href="index.html">Home</a>
+            <a href="account.html">Account</a>
+        ` : `
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+            <a href="register.html">Register</a>
+        `;
+    }
+    async function buyCar(carId) {
+        const username = prompt("Enter your username to buy the car:");
+        if (!username) {
+            alert("You must be logged in to purchase a car.");
+            return;
+        }
+
+        const response = await fetch(`/api/cars/buy/${carId}?username=${username}`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            alert("Thank you for your purchase!");
+            window.location.reload();
+        } else {
+            alert("Failed to purchase car.");
+        }
+    }
+    updateNavigation();
+    loadCars();
+</script>
+</body>
+</html>
